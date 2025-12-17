@@ -2,35 +2,39 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransaksiController;
-use App\Http\Controllers\AuthController;     // Jangan lupa import AuthController
-use App\Http\Middleware\CekLogin;            // Import Middleware Baru
-use App\Http\Middleware\CekTipeUser;
+use App\Http\Controllers\AuthController;     // Import Controller Auth
+use App\Http\Middleware\CekLogin;            // Import Middleware Login
+use App\Http\Middleware\CekTipeUser;         // Import Middleware VIP
 
-// --- ROUTE PUBLIC (BISA DIAKSES SIAPA SAJA) ---
-// Halaman Login
-Route::get('/login', [AuthController::class, 'showLoginForm']);
-// Proses Login
+// --- 1. ROUTE PUBLIC (BISA DIAKSES SIAPA SAJA) ---
+
+// Menampilkan Halaman Login
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+
+// Memproses Login (POST)
 Route::post('/login', [AuthController::class, 'login']);
-// Proses Logout
+
+// Memproses Logout
 Route::get('/logout', [AuthController::class, 'logout']);
 
 
-// --- ROUTE PROTECTED (HARUS LOGIN DULU) ---
-// Kita bungkus semua route dashboard & transaksi dalam middleware 'CekLogin'
+// --- 2. ROUTE PROTECTED (HARUS LOGIN DULU) ---
+// Semua route di dalam grup ini dijaga oleh Middleware 'CekLogin'
 Route::middleware([CekLogin::class])->group(function () {
 
-    // 1. Dashboard
+    // Dashboard Utama
     Route::get('/', [TransaksiController::class, 'index']);
     Route::get('/transaksi', [TransaksiController::class, 'index']);
 
-    // 2. Transaksi (Create, Store, Edit, Update, Delete)
-    Route::get('/transaksi/create', [TransaksiController::class, 'create']);
-    Route::post('/transaksi', [TransaksiController::class, 'store']);
-    Route::get('/transaksi/edit/{id}', [TransaksiController::class, 'edit']);
-    Route::put('/transaksi/{id}', [TransaksiController::class, 'update']);
-    Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy']);
+    // Fitur Transaksi (CRUD)
+    Route::get('/transaksi/create', [TransaksiController::class, 'create']);       // Form Tambah
+    Route::post('/transaksi', [TransaksiController::class, 'store']);              // Simpan Baru
+    Route::get('/transaksi/edit/{id}', [TransaksiController::class, 'edit']);      // Form Edit
+    Route::put('/transaksi/{id}', [TransaksiController::class, 'update']);         // Simpan Edit
+    Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy']);     // Hapus Data
 
-    // 3. Laporan VIP (Proteksi Ganda: Harus Login + Harus VIP)
+    // Halaman Laporan VIP (Proteksi Ganda: Harus Login + Harus VIP)
+    // Route ini memanggil function 'laporan' di TransaksiController
     Route::get('/laporan', [\App\Http\Controllers\TransaksiController::class, 'laporan'])
         ->middleware(\App\Http\Middleware\CekTipeUser::class);
 });

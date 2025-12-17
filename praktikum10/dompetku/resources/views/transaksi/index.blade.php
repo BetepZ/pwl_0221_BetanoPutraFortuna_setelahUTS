@@ -18,7 +18,7 @@
     </div>
 </div>
 
-<!-- Tabel Transaksi -->
+<!-- Tabel Riwayat Transaksi -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-lg font-semibold text-gray-800">Riwayat Transaksi Terakhir</h2>
@@ -39,13 +39,15 @@
                 @foreach($dataTransaksi as $item)
                 <tr class="hover:bg-gray-50 transition">
 
-                    <!-- SOAL NO 2: HUMAN FRIENDLY DATE -->
-                    <!-- Menggunakan Carbon untuk format tanggal bahasa Indonesia -->
+                    <!-- KOLOM TANGGAL (Human Friendly Date) -->
                     <td class="px-6 py-4 text-sm text-gray-500">
                         {{ \Carbon\Carbon::parse($item->tanggal)->translatedFormat('d F Y') }}
                     </td>
 
+                    <!-- KOLOM KETERANGAN -->
                     <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $item->keterangan }}</td>
+
+                    <!-- KOLOM JENIS -->
                     <td class="px-6 py-4 text-sm">
                         @if($item->jenis == 'pemasukan')
                         <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Pemasukan</span>
@@ -53,14 +55,18 @@
                         <span class="px-2 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-semibold">Pengeluaran</span>
                         @endif
                     </td>
+
+                    <!-- KOLOM NOMINAL -->
                     <td class="px-6 py-4 text-sm font-bold text-right {{ $item->jenis == 'pemasukan' ? 'text-emerald-600' : 'text-rose-600' }}">
                         Rp {{ number_format($item->nominal, 0, ',', '.') }}
                     </td>
 
-                    <!-- OPSI -->
+                    <!-- KOLOM OPSI (Edit & Hapus) -->
                     <td class="px-6 py-4 text-sm text-center">
+                        <!-- Tombol Edit -->
                         <a href="{{ url('/transaksi/edit/' . $item->id) }}" class="text-indigo-600 hover:text-indigo-900 font-bold mr-3">Edit</a>
 
+                        <!-- Tombol Hapus -->
                         <form action="{{ url('/transaksi/' . $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                             @csrf
                             @method('DELETE')
