@@ -100,7 +100,7 @@ class TransaksiController extends Controller
             ->sum('nominal');
 
         // Kirim datanya ke view laporan
-        return view('laporan', [
+        return view('transaksi/laporan', [
             'totalPemasukan' => $totalPemasukan,
             'totalPengeluaran' => $totalPengeluaran
         ]);
