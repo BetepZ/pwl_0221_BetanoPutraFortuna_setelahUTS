@@ -2,7 +2,7 @@
 @section('title', 'Dashboard')
 @section('content')
 
-<!-- Statistik Atas -->
+<!-- Card Statistik -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Saldo</h3>
@@ -18,7 +18,7 @@
     </div>
 </div>
 
-<!-- Tabel Riwayat -->
+<!-- Tabel Transaksi -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-lg font-semibold text-gray-800">Riwayat Transaksi Terakhir</h2>
@@ -39,30 +39,35 @@
                 @foreach($dataTransaksi as $item)
                 <tr class="hover:bg-gray-50 transition">
 
-                    <!-- PERHATIKAN DISINI: SUDAH DIGANTI DARI ['...'] MENJADI ->... -->
+                    <!-- SOAL NO 2: HUMAN FRIENDLY DATE -->
+                    <!-- Menggunakan Carbon untuk format tanggal bahasa Indonesia -->
+                    <td class="px-6 py-4 text-sm text-gray-500">
+                        {{ \Carbon\Carbon::parse($item->tanggal)->translatedFormat('d F Y') }}
+                    </td>
 
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ $item->tanggal }}</td>
                     <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $item->keterangan }}</td>
-
                     <td class="px-6 py-4 text-sm">
-                        <!-- IF ELSE JUGA BERUBAH PAKAI TANDA PANAH -->
                         @if($item->jenis == 'pemasukan')
                         <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Pemasukan</span>
                         @else
                         <span class="px-2 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-semibold">Pengeluaran</span>
                         @endif
                     </td>
-
                     <td class="px-6 py-4 text-sm font-bold text-right {{ $item->jenis == 'pemasukan' ? 'text-emerald-600' : 'text-rose-600' }}">
                         Rp {{ number_format($item->nominal, 0, ',', '.') }}
                     </td>
 
-                    <!-- Bagian Tombol Edit (Tugas No 1) -->
+                    <!-- OPSI -->
                     <td class="px-6 py-4 text-sm text-center">
                         <a href="{{ url('/transaksi/edit/' . $item->id) }}" class="text-indigo-600 hover:text-indigo-900 font-bold mr-3">Edit</a>
 
-                        <!-- Tombol Hapus Sementara (Opsional) -->
-                        <a href="#" class="text-rose-600 hover:text-rose-900">Hapus</a>
+                        <form action="{{ url('/transaksi/' . $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-rose-600 hover:text-rose-900 font-bold bg-transparent border-0 cursor-pointer">
+                                Hapus
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach
