@@ -2,39 +2,30 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransaksiController;
-use App\Http\Controllers\AuthController;     // Import Controller Auth
-use App\Http\Middleware\CekLogin;            // Import Middleware Login
-use App\Http\Middleware\CekTipeUser;         // Import Middleware VIP
+use App\Http\Middleware\CekTipeUser;
 
-// --- 1. ROUTE PUBLIC (BISA DIAKSES SIAPA SAJA) ---
+// 1. Rute Dashboard (Read)
+Route::get('/', [TransaksiController::class, 'index']);
 
-// Menampilkan Halaman Login
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+// 2. Rute Form Tambah Data (Create - View)
+Route::get('/transaksi/create', [TransaksiController::class, 'create']);
 
-// Memproses Login (POST)
-Route::post('/login', [AuthController::class, 'login']);
+// 3. Rute Simpan Data (Create - Logic)
+Route::post('/transaksi', [TransaksiController::class, 'store']);
 
-// Memproses Logout
-Route::get('/logout', [AuthController::class, 'logout']);
+// 4. Rute dengan Middleware (Proteksi)
+Route::get('/laporan', function () {
+    return "<h1>Halaman Laporan VIP</h1><p>Selamat datang, user VIP!</p>";
+})->middleware(CekTipeUser::class);
 
+// --- BAGIAN EDIT & UPDATE ---
 
-// --- 2. ROUTE PROTECTED (HARUS LOGIN DULU) ---
-// Semua route di dalam grup ini dijaga oleh Middleware 'CekLogin'
-Route::middleware([CekLogin::class])->group(function () {
+// [PERBAIKAN] Membuka halaman edit HARUS pakai GET (Bukan PUT)
+Route::get('/transaksi/edit/{id}', [TransaksiController::class, 'edit']);
 
-    // Dashboard Utama
-    Route::get('/', [TransaksiController::class, 'index']);
-    Route::get('/transaksi', [TransaksiController::class, 'index']);
+// Proses Simpan Perubahan pakai PUT (Sesuai form @method('PUT'))
+Route::put('/transaksi/{id}', [TransaksiController::class, 'update']);
 
-    // Fitur Transaksi (CRUD)
-    Route::get('/transaksi/create', [TransaksiController::class, 'create']);       // Form Tambah
-    Route::post('/transaksi', [TransaksiController::class, 'store']);              // Simpan Baru
-    Route::get('/transaksi/edit/{id}', [TransaksiController::class, 'edit']);      // Form Edit
-    Route::put('/transaksi/{id}', [TransaksiController::class, 'update']);         // Simpan Edit
-    Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy']);     // Hapus Data
-
-    // Halaman Laporan VIP (Proteksi Ganda: Harus Login + Harus VIP)
-    // Route ini memanggil function 'laporan' di TransaksiController
-    Route::get('/laporan', [\App\Http\Controllers\TransaksiController::class, 'laporan'])
-        ->middleware(\App\Http\Middleware\CekTipeUser::class);
-});
+// --- BAGIAN HAPUS (DELETE) ---
+// Ini route tambahan agar tombol hapus bisa berfungsi
+Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy']);

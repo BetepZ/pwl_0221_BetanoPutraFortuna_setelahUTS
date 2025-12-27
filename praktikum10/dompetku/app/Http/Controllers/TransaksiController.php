@@ -3,15 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; // Wajib import ini untuk database
 
 class TransaksiController extends Controller
 {
-    // Halaman Dashboard
+    // Menampilkan halaman Dashboard
     public function index()
     {
+        // KITA UBAH: Ambil data dari Database (bukan array manual lagi)
         $transaksi = DB::table('transaksi')->orderBy('tanggal', 'desc')->get();
 
+        // Hitung saldo dari database
         $pemasukan = DB::table('transaksi')->where('jenis', 'pemasukan')->sum('nominal');
         $pengeluaran = DB::table('transaksi')->where('jenis', 'pengeluaran')->sum('nominal');
         $saldo = $pemasukan - $pengeluaran;
@@ -24,13 +26,13 @@ class TransaksiController extends Controller
         ]);
     }
 
-    // Halaman Tambah
+    // Menampilkan Form Tambah Data
     public function create()
     {
         return view('transaksi.create');
     }
 
-    // Proses Simpan
+    // Memproses Data Input (Simpan Baru)
     public function store(Request $request)
     {
         $request->validate([
@@ -40,26 +42,30 @@ class TransaksiController extends Controller
             'tanggal' => 'required|date'
         ]);
 
+        // Simpan ke Database
         DB::table('transaksi')->insert([
             'keterangan' => $request->keterangan,
             'nominal' => $request->nominal,
             'jenis' => $request->jenis,
             'tanggal' => $request->tanggal,
-            'created_at' => now()
+            'created_at' => now() // Opsional
         ]);
 
         return redirect('/')->with('success', 'Data transaksi berhasil ditambahkan!');
     }
 
-    // Halaman Edit
+    // --- TUGAS NOMOR 1: MENAMPILKAN HALAMAN EDIT ---
     public function edit($id)
     {
+        // Ambil data berdasarkan ID
         $transaksi = DB::table('transaksi')->where('id', $id)->first();
+
+        // Kirim data ke view edit
         return view('transaksi.edit', ['data' => $transaksi]);
     }
 
-    // Proses Update
-    public function update(Request $request, $id)
+    // --- TUGAS NOMOR 2: UPDATE DATA (Sertakan ini agar form bisa disave nanti) ---
+    public function update(Request $request)
     {
         $request->validate([
             'keterangan' => 'required|min:5|max:100',
@@ -68,7 +74,7 @@ class TransaksiController extends Controller
             'tanggal' => 'required|date'
         ]);
 
-        DB::table('transaksi')->where('id', $id)->update([
+        DB::table('transaksi')->where('id', $request->id)->update([
             'keterangan' => $request->keterangan,
             'nominal' => $request->nominal,
             'jenis' => $request->jenis,
@@ -76,33 +82,5 @@ class TransaksiController extends Controller
         ]);
 
         return redirect('/')->with('success', 'Data transaksi berhasil diupdate!');
-    }
-
-    // --- TUGAS NO 3: FUNGSI HAPUS ---
-    public function destroy($id)
-    {
-        // Hapus data dari database
-        DB::table('transaksi')->where('id', $id)->delete();
-
-        // Redirect balik dengan pesan
-        return redirect('/')->with('success', 'Data transaksi berhasil dihapus!');
-    }
-
-    public function laporan()
-    {
-        // Hitung total pemasukan dan pengeluaran dari database
-        $totalPemasukan = \Illuminate\Support\Facades\DB::table('transaksi')
-            ->where('jenis', 'pemasukan')
-            ->sum('nominal');
-
-        $totalPengeluaran = \Illuminate\Support\Facades\DB::table('transaksi')
-            ->where('jenis', 'pengeluaran')
-            ->sum('nominal');
-
-        // Kirim datanya ke view laporan
-        return view('transaksi/laporan', [
-            'totalPemasukan' => $totalPemasukan,
-            'totalPengeluaran' => $totalPengeluaran
-        ]);
     }
 }
